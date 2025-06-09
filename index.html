@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Management Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        
+        // Your Firebase config
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBIhbNzdCv4rU-hL4Ojy7moJ2u-C4OE7ug",
+  authDomain: "work-manager-app-6bd59.firebaseapp.com",
+  projectId: "work-manager-app-6bd59",
+  storageBucket: "work-manager-app-6bd59.firebasestorage.app",
+  messagingSenderId: "623098443023",
+  appId: "1:623098443023:web:7ca31cab012bf88dcc3a7a",
+  measurementId: "G-FEZRV1011K"
+};
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig)
+        const db = getFirestore(app)
+        
+        // Make db available globally
+        window.db = db
+    </script>
+  
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>WorkFlow</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="switchTab('today')">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>Today</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('backlog')">
+                    <i class="fas fa-list"></i>
+                    <span>Backlog</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('completed')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('projects')">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('stakeholders')">
+                  <i class="fas fa-users"></i>
+                  <span>Stakeholders</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-primary" onclick="openModal('taskModal')">
+                    <i class="fas fa-plus"></i> New Task
+                </button>
+                <button class="btn btn-secondary" onclick="openModal('projectModal')">
+                    <i class="fas fa-folder-plus"></i> New Project
+                </button>
+                <button class="btn btn-secondary" onclick="openModal('stakeholderModal')">
+                    <i class="fas fa-user-plus"></i> New Stakeholder
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Today's Tasks Section -->
+            <section id="today-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Today's Tasks</h2>
+                    <span class="task-count" id="today-count">0 tasks</span>
+                </div>
+                <div class="tasks-grid" id="today-tasks">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>No tasks scheduled for today</p>
+                        <button class="btn btn-primary" onclick="openModal('taskModal')">Add Your First Task</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Backlog Section -->
+            <section id="backlog-section" class="content-section">
+                <div class="section-header">
+                    <h2>Task Backlog</h2>
+                    <div class="filters">
+                        <select id="priority-filter" onchange="filterTasks()">
+                            <option value="">All Priorities</option>
+                            <option value="high">High Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                        <select id="status-filter" onchange="filterTasks()">
+                            <option value="">All Status</option>
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="tasks-grid" id="backlog-tasks">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Your task backlog is empty</p>
+                        <button class="btn btn-primary" onclick="openModal('taskModal')">Add Tasks to Backlog</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Completed Tasks Section -->
+            <section id="completed-section" class="content-section">
+                <div class="section-header">
+                    <h2>Completed Tasks</h2>
+                    <span class="task-count" id="completed-count">0 tasks</span>
+                </div>
+                <div class="tasks-grid" id="completed-tasks">
+                    <div class="empty-state">
+                        <i class="fas fa-check-double"></i>
+                        <p>No completed tasks yet</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects Section -->
+            <section id="projects-section" class="content-section">
+                <div class="section-header">
+                    <h2>Projects</h2>
+                    <span class="project-count" id="project-count">0 projects</span>
+                </div>
+                <div class="projects-grid" id="projects-container">
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No projects created yet</p>
+                        <button class="btn btn-primary" onclick="openModal('projectModal')">Create Your First Project</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stakeholders Section -->
+            <section id="stakeholders-section" class="content-section">
+              <div class="section-header">
+                <h2>Stakeholders</h2>
+                <span class="stakeholder-count" id="stakeholder-count">0 stakeholders</span>
+              </div>
+              <div class="stakeholders-grid" id="stakeholders-container">
+                <div class="empty-state">
+                  <i class="fas fa-user-plus"></i>
+                  <p>No stakeholders added yet</p>
+                  <button class="btn btn-primary" onclick="openModal('stakeholderModal')">Add Your First Stakeholder</button>
+                </div>
+              </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="task-modal-title">Add New Task</h3>
+                <button class="close-btn" onclick="closeModal('taskModal')">&times;</button>
+            </div>
+            <form id="taskForm" onsubmit="saveTask(event)">
+                <div class="form-group">
+                    <label for="task-title">Task Title *</label>
+                    <input type="text" id="task-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-status">Status</label>
+                        <select id="task-status">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-due-date">Due Date</label>
+                        <input type="date" id="task-due-date">
+                    </div>
+                    <div class="form-group">
+                      <label for="task-stakeholder">Stakeholder</label>
+                      <select id="task-stakeholder">
+                        <option value="">No Stakeholder</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-project">Project</label>
+                        <select id="task-project">
+                            <option value="">No Project</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="task-attachments">Attachments</label>
+                    <div class="attachment-inputs">
+                        <div class="attachment-input">
+                            <input type="text" id="task-url" placeholder="Add URL (e.g., https://example.com)">
+                            <button type="button" class="btn-add-attachment" onclick="addAttachment('url')">Add</button>
+                        </div>
+                        <div class="attachment-input">
+                            <input type="text" id="task-document" placeholder="Add document link">
+                            <button type="button" class="btn-add-attachment" onclick="addAttachment('document')">Add</button>
+                        </div>
+                    </div>
+                    <div id="task-attachments-list" class="attachments-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="task-today"> Schedule for today
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Add New Project</h3>
+                <button class="close-btn" onclick="closeModal('projectModal')">&times;</button>
+            </div>
+            <form id="projectForm" onsubmit="saveProject(event)">
+                <div class="form-group">
+                    <label for="project-name">Project Name *</label>
+                    <input type="text" id="project-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-description">Description</label>
+                    <textarea id="project-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="project-status">Status</label>
+                        <select id="project-status">
+                            <option value="planning">Planning</option>
+                            <option value="active" selected>Active</option>
+                            <option value="on-hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-parent">Parent Project</label>
+                        <select id="project-parent">
+                            <option value="">No Parent (Main Project)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="project-deadline">Deadline</label>
+                    <input type="date" id="project-deadline">
+                  </div>
+                  <div class="form-group">
+                    <label for="project-stakeholder">Stakeholder</label>
+                    <select id="project-stakeholder">
+                      <option value="">No Stakeholder</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                    <label for="project-attachments">Attachments</label>
+                    <div class="attachment-inputs">
+                        <div class="attachment-input">
+                            <input type="text" id="project-url" placeholder="Add URL (e.g., https://example.com)">
+                            <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('url')">Add</button>
+                        </div>
+                        <div class="attachment-input">
+                            <input type="text" id="project-document" placeholder="Add document link">
+                            <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('document')">Add</button>
+                        </div>
+                    </div>
+                    <div id="project-attachments-list" class="attachments-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('projectModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="task-details-title">Task Details</h3>
+                <button class="close-btn" onclick="closeModal('taskDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="task-details-content">
+                <!-- Content will be dynamically populated -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('taskDetailsModal')">Close</button>
+                <button type="button" class="btn btn-primary" id="edit-task-btn">Edit Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-details-title">Project Details</h3>
+                <button class="close-btn" onclick="closeModal('projectDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="project-details-content">
+                <!-- Content will be dynamically populated -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('projectDetailsModal')">Close</button>
+                <button type="button" class="btn btn-primary" id="edit-project-btn">Edit Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stakeholder Modal -->
+    <div id="stakeholderModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="stakeholder-modal-title">Add New Stakeholder</h3>
+          <button class="close-btn" onclick="closeModal('stakeholderModal')">&times;</button>
+        </div>
+        <form id="stakeholderForm" onsubmit="saveStakeholder(event)">
+          <div class="form-group">
+            <label for="stakeholder-name">Name *</label>
+            <input type="text" id="stakeholder-name" required>
+          </div>
+          <div class="form-group">
+            <label for="stakeholder-email">Email</label>
+            <input type="email" id="stakeholder-email">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stakeholder-role">Role</label>
+              <input type="text" id="stakeholder-role" placeholder="e.g., Project Manager, Client">
+            </div>
+            <div class="form-group">
+              <label for="stakeholder-company">Company</label>
+              <input type="text" id="stakeholder-company">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="stakeholder-phone">Phone</label>
+            <input type="tel" id="stakeholder-phone">
+          </div>
+          <div class="form-group">
+            <label for="stakeholder-notes">Notes</label>
+            <textarea id="stakeholder-notes" rows="3"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('stakeholderModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Stakeholder</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Followup Modal -->
+    <div id="followupModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="followup-modal-title">Add Followup</h3>
+          <button class="close-btn" onclick="closeModal('followupModal')">&times;</button>
+        </div>
+        <form id="followupForm" onsubmit="saveFollowup(event)">
+          <div class="form-group">
+            <label for="followup-title">Followup Title *</label>
+            <input type="text" id="followup-title" required>
+          </div>
+          <div class="form-group">
+            <label for="followup-description">Description</label>
+            <textarea id="followup-description" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="followup-type">Type</label>
+              <select id="followup-type">
+                <option value="meeting">Meeting</option>
+                <option value="call">Call</option>
+                <option value="email">Email</option>
+                <option value="review">Review</option>
+                <option value="update">Update</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="followup-status">Status</label>
+              <select id="followup-status">
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="followup-date">Date</label>
+            <input type="date" id="followup-date">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('followupModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Followup</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Stakeholder Details Modal -->
+    <div id="stakeholderDetailsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="stakeholder-details-title">Stakeholder Details</h3>
+          <button class="close-btn" onclick="closeModal('stakeholderDetailsModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="stakeholder-details-content">
+          <!-- Content will be dynamically populated -->
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('stakeholderDetailsModal')">Close</button>
+          <button type="button" class="btn btn-primary" id="edit-stakeholder-btn">Edit Stakeholder</button>
+          <button type="button" class="btn btn-primary" id="add-followup-btn">Add Followup</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
