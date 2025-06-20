@@ -48,27 +48,23 @@ const firebaseConfig = {
                 <h1>WorkFlow</h1>
             </div>
             <nav class="sidebar-nav">
-                <button class="nav-item active" onclick="switchTab('today')">
-                    <i class="fas fa-calendar-day"></i>
-                    <span>Today</span>
-                </button>
-                <button class="nav-item" onclick="switchTab('backlog')">
-                    <i class="fas fa-list"></i>
-                    <span>Backlog</span>
-                </button>
-                <button class="nav-item" onclick="switchTab('completed')">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Completed</span>
-                </button>
-                <button class="nav-item" onclick="switchTab('projects')">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>Projects</span>
-                </button>
-                <button class="nav-item" onclick="switchTab('stakeholders')">
-                  <i class="fas fa-users"></i>
-                  <span>Stakeholders</span>
-                </button>
-            </nav>
+    <button class="nav-item active" onclick="switchTab('tasks')">
+        <i class="fas fa-tasks"></i>
+        <span>Tasks</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('projects')">
+        <i class="fas fa-project-diagram"></i>
+        <span>Projects</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('stakeholders')">
+        <i class="fas fa-users"></i>
+        <span>Stakeholders</span>
+    </button>
+<!-- <button class="nav-item" onclick="switchTab('knowledge')">
+    <i class="fas fa-lightbulb"></i>
+    <span>Knowledge Base</span>
+</button> -->
+</nav>
             <div class="sidebar-footer">
                 <button class="btn btn-primary" onclick="openModal('taskModal')">
                     <i class="fas fa-plus"></i> New Task
@@ -79,97 +75,204 @@ const firebaseConfig = {
                 <button class="btn btn-secondary" onclick="openModal('stakeholderModal')">
                     <i class="fas fa-user-plus"></i> New Stakeholder
                 </button>
+<!--                 <button class="btn btn-secondary" onclick="openModal('knowledgeModal')">
+    <i class="fas fa-lightbulb"></i> New Knowledge
+</button> -->
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Today's Tasks Section -->
-            <section id="today-section" class="content-section active">
-                <div class="section-header">
-                    <h2>Today's Tasks</h2>
-                    <span class="task-count" id="today-count">0 tasks</span>
-                </div>
-                <div class="tasks-grid" id="today-tasks">
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <p>No tasks scheduled for today</p>
-                        <button class="btn btn-primary" onclick="openModal('taskModal')">Add Your First Task</button>
-                    </div>
-                </div>
-            </section>
+    <!-- Unified Tasks Section -->
+    <section id="tasks-section" class="content-section active">
+        <div class="section-header">
+            <div class="header-left">
+                <h2>Tasks</h2>
+                <span class="current-date" id="current-date"></span>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('taskModal')">
+                <i class="fas fa-plus"></i> New Task
+            </button>
+        </div>
+        
+        <!-- Task Tabs -->
+        <div class="task-tabs">
+            <button class="tab-btn active" data-tab="today" onclick="switchTaskTab('today')">
+                <span>Today</span>
+                <span class="tab-count" id="today-tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="backlog" onclick="switchTaskTab('backlog')">
+                <span>Backlog</span>
+                <span class="tab-count" id="backlog-tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="completed" onclick="switchTaskTab('completed')">
+                <span>Completed</span>
+                <span class="tab-count" id="completed-tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="overdue" onclick="switchTaskTab('overdue')">
+                <span>Overdue</span>
+                <span class="tab-count" id="overdue-tab-count">0</span>
+            </button>
+        </div>
 
-            <!-- Backlog Section -->
-            <section id="backlog-section" class="content-section">
-                <div class="section-header">
-                    <h2>Task Backlog</h2>
-                    <div class="filters">
-                        <select id="priority-filter" onchange="filterTasks()">
-                            <option value="">All Priorities</option>
-                            <option value="high">High Priority</option>
-                            <option value="medium">Medium Priority</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <select id="status-filter" onchange="filterTasks()">
-                            <option value="">All Status</option>
-                            <option value="todo">To Do</option>
-                            <option value="in-progress">In Progress</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="tasks-grid" id="backlog-tasks">
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>Your task backlog is empty</p>
-                        <button class="btn btn-primary" onclick="openModal('taskModal')">Add Tasks to Backlog</button>
-                    </div>
-                </div>
-            </section>
+        <!-- Task Filters -->
+        <div class="task-filters">
+            <select id="priority-filter" onchange="filterAndLoadTasks()">
+                <option value="">All Priorities</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+            </select>
+            <select id="project-filter" onchange="filterAndLoadTasks()">
+                <option value="">All Projects</option>
+            </select>
+            <input type="text" id="search-filter" placeholder="Search tasks..." onkeyup="filterAndLoadTasks()">
+        </div>
 
-            <!-- Completed Tasks Section -->
-            <section id="completed-section" class="content-section">
-                <div class="section-header">
-                    <h2>Completed Tasks</h2>
-                    <span class="task-count" id="completed-count">0 tasks</span>
-                </div>
-                <div class="tasks-grid" id="completed-tasks">
-                    <div class="empty-state">
-                        <i class="fas fa-check-double"></i>
-                        <p>No completed tasks yet</p>
-                    </div>
-                </div>
-            </section>
+        <!-- Task Container -->
+        <div class="task-container" id="task-container">
+            <div class="task-list" id="task-list">
+                <!-- Tasks will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
 
-            <!-- Projects Section -->
-            <section id="projects-section" class="content-section">
-                <div class="section-header">
-                    <h2>Projects</h2>
-                    <span class="project-count" id="project-count">0 projects</span>
-                </div>
-                <div class="projects-grid" id="projects-container">
-                    <div class="empty-state">
-                        <i class="fas fa-folder-open"></i>
-                        <p>No projects created yet</p>
-                        <button class="btn btn-primary" onclick="openModal('projectModal')">Create Your First Project</button>
-                    </div>
-                </div>
-            </section>
+    <!-- Keep other sections but hide them initially -->
+    <section id="projects-section" class="content-section">
+  <div class="section-header">
+    <div class="header-left">
+      <h2>Projects</h2>
+      <span class="current-date" id="projects-current-date"></span>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('projectModal')">
+      <i class="fas fa-plus"></i> New Project
+    </button>
+  </div>
+  
+  <!-- Project Tabs -->
+  <div class="project-tabs">
+    <button class="tab-btn active" data-tab="all" onclick="switchProjectTab('all')">
+      <span>All</span>
+      <span class="tab-count" id="all-projects-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="planning" onclick="switchProjectTab('planning')">
+      <span>Planning</span>
+      <span class="tab-count" id="planning-projects-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="active" onclick="switchProjectTab('active')">
+      <span>In Progress</span>
+      <span class="tab-count" id="active-projects-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="completed" onclick="switchProjectTab('completed')">
+      <span>Completed</span>
+      <span class="tab-count" id="completed-projects-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="on-hold" onclick="switchProjectTab('on-hold')">
+      <span>On Hold</span>
+      <span class="tab-count" id="on-hold-projects-count">0</span>
+    </button>
+  </div>
 
-            <!-- Stakeholders Section -->
-            <section id="stakeholders-section" class="content-section">
-              <div class="section-header">
-                <h2>Stakeholders</h2>
-                <span class="stakeholder-count" id="stakeholder-count">0 stakeholders</span>
-              </div>
-              <div class="stakeholders-grid" id="stakeholders-container">
-                <div class="empty-state">
-                  <i class="fas fa-user-plus"></i>
-                  <p>No stakeholders added yet</p>
-                  <button class="btn btn-primary" onclick="openModal('stakeholderModal')">Add Your First Stakeholder</button>
-                </div>
-              </div>
-            </section>
-        </main>
+  <!-- Project Filters -->
+  <div class="project-filters">
+    <select id="project-stakeholder-filter" onchange="filterAndLoadProjects()">
+      <option value="">All Stakeholders</option>
+    </select>
+    <input type="text" id="project-search-filter" placeholder="Search projects..." onkeyup="filterAndLoadProjects()">
+  </div>
+
+  <!-- Project Container -->
+  <div class="project-container" id="project-container">
+    <div class="projects-grid" id="projects-container">
+      <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No projects created yet</p>
+        <button class="btn btn-primary" onclick="openModal('projectModal')">Create Your First Project</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <section id="stakeholders-section" class="content-section">
+        <!-- Existing stakeholders content -->
+        <div class="section-header">
+            <h2>Stakeholders</h2>
+            <span class="stakeholder-count" id="stakeholder-count">0 stakeholders</span>
+        </div>
+        <div class="stakeholders-grid" id="stakeholders-container">
+            <div class="empty-state">
+                <i class="fas fa-user-plus"></i>
+                <p>No stakeholders added yet</p>
+                <button class="btn btn-primary" onclick="openModal('stakeholderModal')">Add Your First Stakeholder</button>
+            </div>
+        </div>
+    </section>
+<!-- Knowledge Base Section -->
+<section id="knowledge-section" class="content-section">
+    <div class="section-header">
+        <div class="header-left">
+            <h2>Knowledge Base</h2>
+            <span class="knowledge-count" id="knowledge-count">0 items</span>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('knowledgeModal')">
+            <i class="fas fa-plus"></i> New Entry
+        </button>
+    </div>
+    
+    <!-- Knowledge Tabs -->
+    <div class="knowledge-tabs">
+        <button class="tab-btn active" data-tab="all" onclick="switchKnowledgeTab('all')">
+            <span>All</span>
+            <span class="tab-count" id="all-knowledge-count">0</span>
+        </button>
+        <button class="tab-btn" data-tab="meetings" onclick="switchKnowledgeTab('meetings')">
+            <span>Meetings</span>
+            <span class="tab-count" id="meetings-knowledge-count">0</span>
+        </button>
+        <button class="tab-btn" data-tab="ideas" onclick="switchKnowledgeTab('ideas')">
+            <span>Ideas</span>
+            <span class="tab-count" id="ideas-knowledge-count">0</span>
+        </button>
+        <button class="tab-btn" data-tab="initiatives" onclick="switchKnowledgeTab('initiatives')">
+            <span>Initiatives</span>
+            <span class="tab-count" id="initiatives-knowledge-count">0</span>
+        </button>
+        <button class="tab-btn" data-tab="resources" onclick="switchKnowledgeTab('resources')">
+            <span>Resources</span>
+            <span class="tab-count" id="resources-knowledge-count">0</span>
+        </button>
+    </div>
+
+    <!-- Knowledge Filters -->
+    <div class="knowledge-filters">
+        <select id="knowledge-priority-filter" onchange="filterAndLoadKnowledge()">
+            <option value="">All Priorities</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+        </select>
+        <select id="knowledge-project-filter" onchange="filterAndLoadKnowledge()">
+            <option value="">All Projects</option>
+        </select>
+        <select id="knowledge-stakeholder-filter" onchange="filterAndLoadKnowledge()">
+            <option value="">All Stakeholders</option>
+        </select>
+        <input type="text" id="knowledge-search-filter" placeholder="Search knowledge base..." onkeyup="filterAndLoadKnowledge()">
+        <input type="text" id="knowledge-tags-filter" placeholder="Filter by tags (comma separated)..." onkeyup="filterAndLoadKnowledge()">
+    </div>
+
+    <!-- Knowledge Container -->
+    <div class="knowledge-container" id="knowledge-container">
+        <div class="knowledge-grid" id="knowledge-grid">
+            <div class="empty-state">
+                <i class="fas fa-lightbulb"></i>
+                <p>No knowledge entries yet</p>
+                <button class="btn btn-primary" onclick="openModal('knowledgeModal')">Create Your First Entry</button>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
     </div>
 
     <!-- Task Modal -->
@@ -225,19 +328,21 @@ const firebaseConfig = {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="task-attachments">Attachments</label>
-                    <div class="attachment-inputs">
-                        <div class="attachment-input">
-                            <input type="text" id="task-url" placeholder="Add URL (e.g., https://example.com)">
-                            <button type="button" class="btn-add-attachment" onclick="addAttachment('url')">Add</button>
-                        </div>
-                        <div class="attachment-input">
-                            <input type="text" id="task-document" placeholder="Add document link">
-                            <button type="button" class="btn-add-attachment" onclick="addAttachment('document')">Add</button>
-                        </div>
-                    </div>
-                    <div id="task-attachments-list" class="attachments-list"></div>
-                </div>
+  <label for="task-attachments">Attachments</label>
+  <div class="attachment-inputs">
+    <div class="attachment-input">
+      <input type="text" id="task-attachment-name" placeholder="Attachment name">
+      <input type="text" id="task-url" placeholder="Add URL (e.g., https://example.com)">
+      <button type="button" class="btn-add-attachment" onclick="addAttachment('url')">Add</button>
+    </div>
+    <div class="attachment-input">
+      <input type="text" id="task-attachment-name-doc" placeholder="Document name">
+      <input type="text" id="task-document" placeholder="Add document link">
+      <button type="button" class="btn-add-attachment" onclick="addAttachment('document')">Add</button>
+    </div>
+  </div>
+  <div id="task-attachments-list" class="attachments-list"></div>
+</div>
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="task-today"> Schedule for today
@@ -297,19 +402,21 @@ const firebaseConfig = {
                   </div>
                 </div>
                 <div class="form-group">
-                    <label for="project-attachments">Attachments</label>
-                    <div class="attachment-inputs">
-                        <div class="attachment-input">
-                            <input type="text" id="project-url" placeholder="Add URL (e.g., https://example.com)">
-                            <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('url')">Add</button>
-                        </div>
-                        <div class="attachment-input">
-                            <input type="text" id="project-document" placeholder="Add document link">
-                            <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('document')">Add</button>
-                        </div>
-                    </div>
-                    <div id="project-attachments-list" class="attachments-list"></div>
-                </div>
+  <label for="project-attachments">Attachments</label>
+  <div class="attachment-inputs">
+    <div class="attachment-input">
+      <input type="text" id="project-attachment-name" placeholder="Attachment name">
+      <input type="text" id="project-url" placeholder="Add URL (e.g., https://example.com)">
+      <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('url')">Add</button>
+    </div>
+    <div class="attachment-input">
+      <input type="text" id="project-attachment-name-doc" placeholder="Document name">
+      <input type="text" id="project-document" placeholder="Add document link">
+      <button type="button" class="btn-add-attachment" onclick="addProjectAttachment('document')">Add</button>
+    </div>
+  </div>
+  <div id="project-attachments-list" class="attachments-list"></div>
+</div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('projectModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Project</button>
@@ -442,6 +549,151 @@ const firebaseConfig = {
         </form>
       </div>
     </div>
+
+    <!-- Subtask Modal -->
+<div id="subtaskModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="subtask-modal-title">Add Subtask</h3>
+      <button class="close-btn" onclick="closeModal('subtaskModal')">&times;</button>
+    </div>
+    <form id="subtaskForm" onsubmit="saveSubtask(event)">
+      <div class="form-group">
+        <label for="subtask-title">Subtask Title *</label>
+        <input type="text" id="subtask-title" required>
+      </div>
+      <div class="form-group">
+        <label for="subtask-description">Description</label>
+        <textarea id="subtask-description" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="subtask-priority">Priority</label>
+          <select id="subtask-priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="subtask-status">Status</label>
+          <select id="subtask-status">
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="subtask-due-date">Due Date</label>
+        <input type="date" id="subtask-due-date">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('subtaskModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Subtask</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Knowledge Modal -->
+<div id="knowledgeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="knowledge-modal-title">Add New Knowledge Entry</h3>
+            <button class="close-btn" onclick="closeModal('knowledgeModal')">&times;</button>
+        </div>
+        <form id="knowledgeForm" onsubmit="saveKnowledge(event)">
+            <div class="form-group">
+                <label for="knowledge-title">Title *</label>
+                <input type="text" id="knowledge-title" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="knowledge-type">Type</label>
+                    <select id="knowledge-type">
+                        <option value="meetings">Meeting Notes</option>
+                        <option value="ideas">Ideas</option>
+                        <option value="initiatives">Initiatives</option>
+                        <option value="resources">Resources</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="knowledge-priority">Priority</label>
+                    <select id="knowledge-priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="knowledge-content">Content *</label>
+                <textarea id="knowledge-content" rows="8" required placeholder="Enter your notes, ideas, or resource details..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="knowledge-project">Related Project</label>
+                    <select id="knowledge-project">
+                        <option value="">No Project</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="knowledge-stakeholder">Related Stakeholder</label>
+                    <select id="knowledge-stakeholder">
+                        <option value="">No Stakeholder</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="knowledge-date">Date</label>
+                    <input type="date" id="knowledge-date">
+                </div>
+                <div class="form-group">
+                    <label for="knowledge-tags">Tags</label>
+                    <input type="text" id="knowledge-tags" placeholder="Enter tags separated by commas">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="knowledge-attachments">Attachments</label>
+                <div class="attachment-inputs">
+                    <div class="attachment-input">
+                        <input type="text" id="knowledge-attachment-name" placeholder="Attachment name">
+                        <input type="text" id="knowledge-url" placeholder="Add URL (e.g., https://example.com)">
+                        <button type="button" class="btn-add-attachment" onclick="addKnowledgeAttachment('url')">Add</button>
+                    </div>
+                    <div class="attachment-input">
+                        <input type="text" id="knowledge-attachment-name-doc" placeholder="Document name">
+                        <input type="text" id="knowledge-document" placeholder="Add document link">
+                        <button type="button" class="btn-add-attachment" onclick="addKnowledgeAttachment('document')">Add</button>
+                    </div>
+                </div>
+                <div id="knowledge-attachments-list" class="attachments-list"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('knowledgeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Knowledge Details Modal -->
+<div id="knowledgeDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="knowledge-details-title">Knowledge Entry Details</h3>
+            <button class="close-btn" onclick="closeModal('knowledgeDetailsModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="knowledge-details-content">
+            <!-- Content will be dynamically populated -->
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('knowledgeDetailsModal')">Close</button>
+            <button type="button" class="btn btn-primary" id="edit-knowledge-btn">Edit Entry</button>
+        </div>
+    </div>
+</div>
 
     <!-- Stakeholder Details Modal -->
     <div id="stakeholderDetailsModal" class="modal">
