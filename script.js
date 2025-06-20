@@ -1811,10 +1811,10 @@ function viewStakeholderDetails(stakeholderId) {
             </div>
             <div class="followup-actions">
               <button class="btn-edit-followup" onclick="editFollowup('${followup.id}')">
-                <i class="fas fa-edit"></i> Edit
+                <i class="fas fa-edit"></i> 
               </button>
               <button class="btn-delete-followup" onclick="deleteFollowup('${followup.id}')">
-                <i class="fas fa-trash"></i> Delete
+                <i class="fas fa-trash"></i> 
               </button>
             </div>
           </div>
@@ -2064,10 +2064,7 @@ function createStakeholderCard(stakeholder) {
           </div>
           <div class="followup-actions">
             <button class="btn-edit-followup" onclick="editFollowup('${followup.id}')">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="btn-delete-followup" onclick="deleteFollowup('${followup.id}')">
-              <i class="fas fa-trash"></i> Delete
+              <i class="fas fa-edit"></i> 
             </button>
           </div>
         </div>
@@ -2083,13 +2080,13 @@ function createStakeholderCard(stakeholder) {
       
       <div class="task-actions">
         <button class="btn-view" onclick="viewStakeholderDetails('${stakeholder.id}')">
-          <i class="fas fa-eye"></i> View
+          <i class="fas fa-eye"></i> 
         </button>
         <button class="btn-edit" onclick="editStakeholder('${stakeholder.id}')">
-          <i class="fas fa-edit"></i> Edit
+          <i class="fas fa-edit"></i> 
         </button>
         <button class="btn-delete" onclick="deleteStakeholder('${stakeholder.id}')">
-          <i class="fas fa-trash"></i> Delete
+          <i class="fas fa-trash"></i> 
         </button>
       </div>
     </div>
