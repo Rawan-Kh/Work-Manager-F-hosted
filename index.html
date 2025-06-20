@@ -544,6 +544,9 @@ const firebaseConfig = {
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-secondary" onclick="closeModal('followupModal')">Cancel</button>
+              <button class="btn btn-delete-followup" onclick="deleteFollowup('${followup.id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
             <button type="submit" class="btn btn-primary">Save Followup</button>
           </div>
         </form>
