@@ -937,6 +937,7 @@ body {
   display: flex;
   gap: 0.25rem;
   margin-top: 0.5rem;
+  justify-content: flex-end;
 }
 
 .followup-actions button {
